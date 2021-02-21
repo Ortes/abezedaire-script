@@ -16,7 +16,7 @@ var birthDateElement = birthDateDiv.getElementsByTagName("input")[0];
 var refresh = document.getElementById("buttons03");
 
 
-var updateFunc = function (buttonNum) {
+var updateFunc = function (buttonNum, cell) {
     var specificData = [];
     var birthDate = birthDateElement.value;
     specificData.push(data[1][birthDate - 1920]);
@@ -49,16 +49,21 @@ var updateFunc = function (buttonNum) {
 
     // Analytics
     var oReq = new XMLHttpRequest();
-    oReq.open("POST", "https://abzr.abezedaire.fr");
-    oReq.send(JSON.stringify({"uuid": uuid, "buttonNum": buttonNum}));
+    oReq.open("POST", "https://e2df1fee-6157-4d74-b7af-969d7ebe59c5.pub.instances.scw.cloud:64812/");
+    oReq.send(JSON.stringify({"uuid": uuid === null ? "anonymous" : uuid, "buttonNum": buttonNum, "number": cell.value}));
 }
 
 
 // Setup listeners
-for (var i = 0, n = cells.length; i < n; i++)
-    for (var j = 0, m = cells[i].length; j < m; j++)
-        cells[i][j].addEventListener("input", () => updateFunc());
-birthDateElement.addEventListener("input", updateFunc);
+for (var i = 0, n = cells.length; i < n; i++) {
+    for (var j = 0, m = cells[i].length; j < m; j++) {
+        var buttonNum = i * cells[i].length + j;
+        cells[i][j].addEventListener("input", ((num, cell) => () => {
+            updateFunc(num, cell);
+        })(buttonNum, cells[i][j]));
+    }
+}
+birthDateElement.addEventListener("input", () => updateFunc(-1, 0));
 
 
 // Get score from url back inplace
@@ -83,7 +88,7 @@ function reset() {
 refresh.addEventListener("click", reset);
 
 
-var uuid;
+var uuid = null;
 
 function setCookie(name, value, days) {
     var expires = "";
@@ -106,7 +111,7 @@ function getCookie(name) {
     return null;
 }
 
-if (getCookie("uuid") === null) {
+if (getCookie("uuid") === null && typeof uuidv4 !== 'undefined') {
     uuid = uuidv4();
     setCookie(uuid);
 }
