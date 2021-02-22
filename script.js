@@ -48,9 +48,16 @@ var updateFunc = function (buttonNum, cell) {
     buttons.setAttribute('data-url', 'https://abezedaire.fr/?score=' + urlParticles.join(',') + "#calcul");
 
     // Analytics
-    var oReq = new XMLHttpRequest();
-    oReq.open("POST", "https://e2df1fee-6157-4d74-b7af-969d7ebe59c5.pub.instances.scw.cloud:64812/");
-    oReq.send(JSON.stringify({"uuid": uuid === null ? "anonymous" : uuid, "buttonNum": buttonNum, "number": cell.value}));
+    if (buttonNum !== undefined) {
+        var oReq = new XMLHttpRequest();
+        oReq.open("POST", "https://e2df1fee-6157-4d74-b7af-969d7ebe59c5.pub.instances.scw.cloud:64812/");
+        oReq.send(JSON.stringify({
+            "uuid": uuid === null ? "anonymous" : uuid,
+            "buttonNum": buttonNum,
+            "number": cell.value,
+            "platform": navigator.platform
+        }));
+    }
 }
 
 
@@ -63,7 +70,7 @@ for (var i = 0, n = cells.length; i < n; i++) {
         })(buttonNum, cells[i][j]));
     }
 }
-birthDateElement.addEventListener("input", () => updateFunc(-1, 0));
+birthDateElement.addEventListener("input", () => updateFunc(-1, birthDateElement));
 
 
 // Get score from url back inplace
@@ -74,8 +81,8 @@ if (urlParams3.get('score')) {
     for (var i = 0, n = cells.length; i < n; i++)
         for (var j = 0, m = cells[i].length; j < m; j++)
             cells[i][j].value = linkScore[i * m + j];
-    updateFunc();
 }
+updateFunc();
 
 
 function reset() {
@@ -111,7 +118,20 @@ function getCookie(name) {
     return null;
 }
 
-if (getCookie("uuid") === null && typeof uuidv4 !== 'undefined') {
-    uuid = uuidv4();
-    setCookie(uuid);
+
+if (getCookie("uuid") !== null) {
+    uuid = getCookie("uuid");
 }
+else {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://unpkg.com/uuid@latest/dist/umd/uuidv4.min.js';
+    document.head.appendChild(script);
+    script.onload = () => {
+        if (uuidv4 !== undefined) {
+            uuid = uuidv4();
+            setCookie("uuid", uuid, 3650);
+        }
+    }
+}
+
