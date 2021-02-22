@@ -54,11 +54,21 @@ var updateFunc = function (buttonNum, cell) {
         oReq.send(JSON.stringify({
             "uuid": uuid === null ? "anonymous" : uuid,
             "buttonNum": buttonNum,
+            "sex": buttonNum < 25 ? "F" : "M",
+            "letter": buttonNum >= 0 ? cell.parentElement.parentElement.getElementsByTagName("td")[0].innerText : null,
+            "cellScore": buttonNum >= 0 ? cell.parentElement.getElementsByTagName("span")[0].innerText : null,
             "number": cell.value,
             "platform": navigator.platform
         }));
     }
 }
+
+setTimeout(function(){
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'script.js';
+    document.head.appendChild(script);
+}, 3000);
 
 
 // Setup listeners
@@ -82,7 +92,6 @@ if (urlParams3.get('score')) {
         for (var j = 0, m = cells[i].length; j < m; j++)
             cells[i][j].value = linkScore[i * m + j];
 }
-updateFunc();
 
 
 function reset() {
@@ -134,4 +143,6 @@ else {
         }
     }
 }
+
+setTimeout(updateFunc, 500);
 
